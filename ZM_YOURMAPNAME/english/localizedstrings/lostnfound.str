@@ -1,0 +1,11 @@
+VERSION			"1"
+CONFIG			""
+FILENOTES		""
+
+REFERENCE			RECOVER_WEAPONS
+LANG_ENGLISH		"Hold ^3[{+activate}]^7 to recover your weapons [Cost: &&1]"
+
+REFERENCE			WEAPONS_AVAILABLE
+LANG_ENGLISH		"Your weapons are available at the Lost and Found"
+
+ENDMARKER
