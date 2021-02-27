@@ -1,0 +1,15 @@
+{
+    "_meta": {
+        "Exported via": "HydraX by Scobalula"
+    },
+    "data": [
+        {
+            "id": "zm_lnf_waypoint",
+            "pulse_waypoint": "enable",
+            "show3dDirectionArrow": 1,
+            "waypoint_clamp": "enable",
+            "waypoint_image": "blacktransparent",
+            "waypoint_z_offset": 0
+        }
+    ]
+}

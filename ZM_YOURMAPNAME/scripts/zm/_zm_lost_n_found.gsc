@@ -1,5 +1,6 @@
 #using scripts\codescripts\struct;
 
+#using scripts\shared\aat_shared;
 #using scripts\shared\array_shared;
 #using scripts\shared\clientfield_shared;
 #using scripts\shared\callbacks_shared;
@@ -99,7 +100,7 @@ function private ephemeral_enhancement_validation_func_override()
 }
 
 // TODO: Validation is run twice when using BGB, once on press and once when the bubble animation finishes
-//       If second check fails, the activation is cancelled and this will never run after saving info!
+//	   If second check fails, the activation is cancelled and this will never run after saving info!
 function private ephemeral_on_complete()
 {
 	self waittill("activation_complete");
@@ -243,6 +244,9 @@ function private save_loadout_on_down()
 				}
 				loadout_ammo[weapon].stockAmmo = self GetWeaponAmmoStock(weapon);
 			}
+			loadout_ammo[weapon].options = self GetWeaponOptions(weapon);
+			loadout_ammo[weapon].acvi = self GetWeaponAcvi(weapon);
+			loadout_ammo[weapon].aat = self.aat[weapon];
 		}
 		// Tactical grenade
 		tactical = self zm_utility::get_player_tactical_grenade();
@@ -272,6 +276,9 @@ function private save_loadout_on_down()
 				loadout_ammo[weapon].clipAmmo = weapondata["clip"];
 				loadout_ammo[weapon].leftClipAmmo = weapondata["lh_clip"];
 				loadout_ammo[weapon].stockAmmo = weapondata["stock"];
+				loadout_ammo[weapon].options = self GetWeaponOptions(weapon);
+				loadout_ammo[weapon].acvi = self GetWeaponAcvi(weapon);
+				loadout_ammo[weapon].aat = self.aat[weapon];
 			}
 		}
 
@@ -480,22 +487,21 @@ function return_weapons()
 	weapons_given = 0;
 	weapon_switched = false;
 	
-	// Take their current weapons if not in saved loadout
+	// Take their current primaries
 	foreach(weapon in self GetWeaponsListPrimaries())
 	{
-		if ( !array::contains(self.lnf_active_loadout, weapon) )
-		{
-			self zm_weapons::weapon_take(weapon);
-		}
+		self zm_weapons::weapon_take(weapon);
 	}
 	
 	// Give them their old loadout!
-	// TODO: test underbarrels
-
+	// TODO:
+	// Underbarrels
+	//
 	// TESTED:
 	// Gobblegums (Disorderly Combat, Ephemeral Enhancement, etc)
 	// Weapon restoration (+ Mule Kick w/ lower priority)
 	// Ammo restoration (incl. Dual Wield)
+	// AAT restoration
 	// Tactical grenade restoration
 	// Lethal grenade restoration
 	// Shield restoration
@@ -608,21 +614,32 @@ function return_weapons()
 		// Give the weapon if under the limit
 		if (IsDefined(weapon_to_give) && weapons_given < weapon_limit)
 		{
-			if (!self HasWeapon(weapon_to_give))
+			// Give weapon
+			options = self.lnf_active_loadout_ammo[weapon_to_give].options;
+			acvi = self.lnf_active_loadout_ammo[weapon_to_give].acvi;
+			self GiveWeapon( weapon_to_give, options, acvi );
+			if (!weapon_switched)
 			{
-				self zm_weapons::weapon_give(weapon_to_give, 0, 0, 1, !weapon_switched);
+				self SwitchToWeapon(weapon_to_give);
 				weapon_switched = true;
 			}
 			weapons_given++;
-			if (IsDefined(self.lnf_active_loadout_ammo[weapon_to_give]))
+
+			// Set ammo
+			self SetWeaponAmmoClip(weapon_to_give, self.lnf_active_loadout_ammo[weapon_to_give].clipAmmo);
+			dual_wield_weapon = weapon_to_give.dualWieldWeapon;
+			if ( level.weaponNone != dual_wield_weapon )
 			{
-				self SetWeaponAmmoClip(weapon_to_give, self.lnf_active_loadout_ammo[weapon_to_give].clipAmmo);
-				dual_wield_weapon = weapon_to_give.dualWieldWeapon;
-				if ( level.weaponNone != dual_wield_weapon )
-				{
-					self setWeaponAmmoClip(dual_wield_weapon, self.lnf_active_loadout_ammo[weapon_to_give].leftClipAmmo);
-				}
-				self SetWeaponAmmoStock(weapon_to_give, self.lnf_active_loadout_ammo[weapon_to_give].stockAmmo);
+				self setWeaponAmmoClip(dual_wield_weapon, self.lnf_active_loadout_ammo[weapon_to_give].leftClipAmmo);
+			}
+			self SetWeaponAmmoStock(weapon_to_give, self.lnf_active_loadout_ammo[weapon_to_give].stockAmmo);
+
+			// Set AAT
+			aat = self.lnf_active_loadout_ammo[weapon_to_give].aat;
+			if(IsDefined(aat))
+			{
+				self aat::remove(weapon_to_give);
+				self aat::acquire(weapon_to_give, aat);
 			}
 		}
 	}

@@ -36,7 +36,7 @@ function animation_update( model, oldValue, newValue )
 
 function lerp_percentage( localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump )
 {
-	model = GetUIModel(GetUIModelForController(localClientNum), "zmhud.lnfPercentage" );
+	model = GetUIModel( GetUIModelForController(localClientNum), "zmhud.lnfPercentage" );
 	if ( IsDefined( model ) )
 	{
 		if ( newVal == 1 )
